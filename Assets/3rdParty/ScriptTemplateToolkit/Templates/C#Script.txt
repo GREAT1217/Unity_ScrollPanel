@@ -1,0 +1,75 @@
+﻿/*************************************************************************
+ *  Copyright © #COPYRIGHTYEAR# Great1217. All rights reserved.
+ *------------------------------------------------------------------------
+ *  File         :  #SCRIPTNAME#.cs
+ *  Description  :  Null.
+ *------------------------------------------------------------------------
+ *  Author       :  Great1217
+ *  Version      :  0.1.0
+ *  Date         :  #CREATEDATE#
+ *  Description  :  Initial development version.
+ *************************************************************************/
+
+using UnityEngine;
+using System.Collections;
+
+namespace Mogoson.Script
+{
+    //[AddComponentMenu("")]
+    //[RequireComponent(typeof())]
+    public class #SCRIPTNAME# : MonoBehaviour
+    {
+        #region Field and Property
+        //  [Tooltip("")]
+        //  [SerializeField]
+        #endregion
+
+        #region Private Method
+        // Use this for initialization.
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame.
+        void Update()
+        {
+
+        }
+        #endregion
+
+        #region Public Method
+        #endregion
+    }
+}
+
+
+
+
+/**********Mine**********/
+
+
+
+
+/*************************************************************************
+ *  Copyright © #COPYRIGHTYEAR# Great1217. All rights reserved.
+ *------------------------------------------------------------------------
+ *  File         :  #SCRIPTNAME#.cs
+ *  Description  :  Null.
+ *------------------------------------------------------------------------
+ *  Author       :  Great1217
+ *  Version      :  0.1.0
+ *  Date         :  #CREATEDATE#
+ *  Description  :  Initial development version.
+ *************************************************************************/
+
+using UnityEngine;
+using System.Collections;
+
+public class #SCRIPTNAME# : MonoBehaviour
+{
+    void Start()
+    {
+
+    }
+}

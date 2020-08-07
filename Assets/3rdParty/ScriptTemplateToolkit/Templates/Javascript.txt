@@ -1,0 +1,29 @@
+﻿/*************************************************************************
+ *  Copyright © #COPYRIGHTYEAR# Great1217. All rights reserved.
+ *------------------------------------------------------------------------
+ *  File         :  #SCRIPTNAME#.js
+ *  Description  :  Null.
+ *------------------------------------------------------------------------
+ *  Author       :  Great1217
+ *  Version      :  0.1.0
+ *  Date         :  #CREATEDATE#
+ *  Description  :  Initial development version.
+ *************************************************************************/
+
+#pragma strict
+
+//@script AddComponentMenu ("")
+//@script RequireComponent()
+
+//@Tooltip("")
+//@SerializeField
+
+function Start()
+{
+
+}
+
+function Update()
+{
+
+}
