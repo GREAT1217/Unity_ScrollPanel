@@ -11,6 +11,7 @@
  *************************************************************************/
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -35,6 +36,8 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         Dynamic,//动态生成
         Static//静态生成（使用子物体）
     }
+    public class ItemInitEvent : UnityEvent<Transform, int> { };
+    public class ItemCenterEvent : UnityEvent<int> { };
 
     public ScrollAxis _scrollAxis = ScrollAxis.Horizontal;//滑动轴向
 
@@ -64,12 +67,30 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     private bool _pressing;
     private bool _dragging;
     private bool _snapping;
+    private ItemInitEvent _onItemInit;
+    private ItemCenterEvent _onItemCenter;
 
     public RectTransform Content { get { return _scrollRect.content; } }
     public RectTransform Viewport { get { return _scrollRect.viewport; } }
     public RectTransform[] ItemsRT { get; set; }
     public int ItemsCount { get { return _itemsCount; } }
     public int CenterIndex { get; set; }
+    public ItemInitEvent OnItemInit
+    {
+        get
+        {
+            if (_onItemInit == null) _onItemInit = new ItemInitEvent();
+            return _onItemInit;
+        }
+    }
+    public ItemCenterEvent OnItemCenter
+    {
+        get
+        {
+            if (_onItemCenter == null) _onItemCenter = new ItemCenterEvent();
+            return _onItemCenter;
+        }
+    }
 
     void Awake()
     {
@@ -121,11 +142,6 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
 
     void Init()
     {
-        if (ItemsCount < 3 && _infinite)
-        {
-            _infinite = false;
-            Debug.Log("无限滑动须4个及以上数量的子对象");
-        }
         //设置ScrollRect
         _scrollRect.horizontal = _scrollAxis != ScrollAxis.Vertical;
         _scrollRect.vertical = _scrollAxis != ScrollAxis.Horizontal;
@@ -196,19 +212,19 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     void InitItem(int index, RectTransform item)
     {
         ItemsRT[index] = item;
+        //设置轴心点、锚点：横向滑动时左侧居中，纵向滑动时底部居中
+        ItemsRT[index].pivot = new Vector2(0.5f, 0.5f);
+        ItemsRT[index].anchorMin = new Vector2(_scrollAxis != ScrollAxis.Vertical ? 0f : 0.5f, _scrollAxis != ScrollAxis.Horizontal ? 0f : 0.5f);
+        ItemsRT[index].anchorMax = new Vector2(_scrollAxis != ScrollAxis.Vertical ? 0f : 0.5f, _scrollAxis != ScrollAxis.Horizontal ? 0f : 0.5f);
         if (_itemAutoLayout)
         {
-            //设置锚点：横向滑动时左侧居中，纵向滑动时底部居中
-            ItemsRT[index].anchorMin = new Vector2(_scrollAxis == ScrollAxis.Horizontal ? 0f : 0.5f, _scrollAxis == ScrollAxis.Vertical ? 0f : 0.5f);
-            ItemsRT[index].anchorMax = new Vector2(_scrollAxis == ScrollAxis.Horizontal ? 0f : 0.5f, _scrollAxis == ScrollAxis.Vertical ? 0f : 0.5f);
-            //设置轴心点，大小
-            ItemsRT[index].pivot = new Vector2(0.5f, 0.5f);
             ItemsRT[index].sizeDelta = _itemSize;
             //设置位置
             float itemPosX = (_scrollAxis == ScrollAxis.Horizontal) ? index * (_itemSpacing + _itemSize.x) + (_itemSize.x / 2f) : 0f;//子物体轴心点在中间
             float itemPosY = (_scrollAxis == ScrollAxis.Vertical) ? index * (_itemSpacing + _itemSize.y) + (_itemSize.y / 2f) : 0f;
             ItemsRT[index].anchoredPosition = new Vector2(itemPosX, itemPosY);
         }
+        OnItemInit.Invoke(item, index);
     }
 
     /// <summary>
@@ -280,6 +296,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     public void SnapItem(int index)
     {
         CenterIndex = index;
+        OnItemCenter.Invoke(CenterIndex);
         _targetPos = _centerPos - ItemsRT[index].anchoredPosition;
         _snapping = true;
     }

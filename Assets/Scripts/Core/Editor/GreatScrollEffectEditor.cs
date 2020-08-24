@@ -34,9 +34,11 @@ public class GreatScrollEffectEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+
         ShowScrollEffects();
         EditorGUILayout.Space();
         AddScrollEffect();
+
         serializedObject.ApplyModifiedProperties();
         PrefabUtility.RecordPrefabInstancePropertyModifications(_greatScrollEffect);
     }
@@ -97,7 +99,7 @@ public class GreatScrollEffectEditor : Editor
         if (GUILayout.Button("Add New ScrollEffect"))
         {
             ScrollEffect.EffectType effectType = (ScrollEffect.EffectType)Enum.Parse(typeof(ScrollEffect.EffectType), _effectTypes[_effectTypeIndex]);
-            _greatScrollEffect.AddScrollEffect(new ScrollEffect(effectType, _sMin, _sMax, _vMin, _vMax, new AnimationCurve(_effectCurve.keys), _greatScrollEffect));
+            _greatScrollEffect._scrollEffects.Add(new ScrollEffect(effectType, _sMin, _sMax, _vMin, _vMax, new AnimationCurve(_effectCurve.keys), _greatScrollEffect));
         }
         EditorGUILayout.Space();
 

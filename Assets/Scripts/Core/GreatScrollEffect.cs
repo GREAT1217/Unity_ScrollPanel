@@ -14,18 +14,20 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 
 [Serializable]
 public class ScrollEffect
 {
     public enum EffectType
     {
-        EularAnglesX,
-        EularAnglesY,
-        EularAnglesZ,
-        ScaleX,
-        ScaleY,
-        PositionZ,
+        LocalEularAnglesX,
+        LocalEularAnglesY,
+        LocalEularAnglesZ,
+        LocalScaleX,
+        LocalScaleY,
+        LocalPositionZ,
+        CustomEffect
     }
 
     public EffectType _effectType;//效果类型
@@ -35,9 +37,9 @@ public class ScrollEffect
     public float _effectValueMax;
     public AnimationCurve _effectCurve;//效果曲线：根据X坐标（与中心在滑动轴向的间距），求出Y坐标（某一类效果的生效值区间）
 
-    public float GetEffectValue(float value)
+    public float GetEffectValue(float space)
     {
-        return (_effectCurve != null) ? _effectCurve.Evaluate(value) : 0f;
+        return (_effectCurve != null) ? _effectCurve.Evaluate(space) : 0f;
     }
 
 #if UNITY_EDITOR
@@ -63,9 +65,10 @@ public class ScrollEffect
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         EditorGUI.indentLevel = 1;
 
-        _effectGUIBox = EditorGUILayout.Foldout(_effectGUIBox, _effectType.ToString(), true);
+        _effectGUIBox = EditorGUILayout.Foldout(_effectGUIBox, "[Effect] " + _effectType.ToString(), true);
         if (_effectGUIBox)
         {
+            EditorGUI.indentLevel++;
             _effectSpace = EditorGUILayout.Foldout(_effectSpace, "EffectSpace", true);
             if (_effectSpace)
             {
@@ -92,7 +95,7 @@ public class ScrollEffect
                 _scrollEffects._scrollEffects.Remove(this);
             }
             EditorGUILayout.Space();
-
+            EditorGUI.indentLevel--;
         }
         EditorGUILayout.EndVertical();
     }
@@ -103,13 +106,20 @@ public class ScrollEffect
 [RequireComponent(typeof(GreatScrollPanel))]
 public class GreatScrollEffect : MonoBehaviour
 {
-    public List<ScrollEffect> _scrollEffects = new List<ScrollEffect>();
-    GreatScrollPanel _scrollPanel;
+    public class EffectEvent : UnityEvent<Transform, float> { };
 
-    public void AddScrollEffect(ScrollEffect effect)
+    public List<ScrollEffect> _scrollEffects = new List<ScrollEffect>();
+
+    private GreatScrollPanel _scrollPanel;
+    private EffectEvent _onCustomEffect;
+
+    public EffectEvent OnCustomEffect
     {
-        if (_scrollEffects == null) _scrollEffects = new List<ScrollEffect>();
-        _scrollEffects.Add(effect);
+        get
+        {
+            if (_onCustomEffect == null) _onCustomEffect = new EffectEvent();
+            return _onCustomEffect;
+        }
     }
 
     void Awake()
@@ -127,7 +137,7 @@ public class GreatScrollEffect : MonoBehaviour
     /// </summary>
     void OnScrollEffect()
     {
-        if (_scrollEffects == null || _scrollEffects.Count == 0) return;
+        if (_scrollEffects.Count == 0) return;
         foreach (Transform item in _scrollPanel.ItemsRT)
         {
             float space = _scrollPanel.SpaceFromCenter(item.position);
@@ -135,42 +145,47 @@ public class GreatScrollEffect : MonoBehaviour
             {
                 switch (effect._effectType)
                 {
-                    case ScrollEffect.EffectType.EularAnglesX:
+                    case ScrollEffect.EffectType.LocalEularAnglesX:
                         {
                             Vector3 eulerAngles = item.localEulerAngles;
                             eulerAngles.x = effect.GetEffectValue(space);
                             item.localRotation = Quaternion.Euler(eulerAngles);
                         }
                         break;
-                    case ScrollEffect.EffectType.EularAnglesY:
+                    case ScrollEffect.EffectType.LocalEularAnglesY:
                         {
                             Vector3 eulerAngles = item.localEulerAngles;
                             eulerAngles.y = effect.GetEffectValue(space);
                             item.localRotation = Quaternion.Euler(eulerAngles);
                         }
                         break;
-                    case ScrollEffect.EffectType.EularAnglesZ:
+                    case ScrollEffect.EffectType.LocalEularAnglesZ:
                         {
                             Vector3 eulerAngles = item.localEulerAngles;
                             eulerAngles.z = effect.GetEffectValue(space);
                             item.localRotation = Quaternion.Euler(eulerAngles);
                         }
                         break;
-                    case ScrollEffect.EffectType.ScaleX:
+                    case ScrollEffect.EffectType.LocalScaleX:
                         {
                             item.localScale = new Vector3(effect.GetEffectValue(space), item.localScale.y, 1);
                         }
                         break;
-                    case ScrollEffect.EffectType.ScaleY:
+                    case ScrollEffect.EffectType.LocalScaleY:
                         {
                             item.localScale = new Vector3(item.localScale.x, effect.GetEffectValue(space), 1);
                         }
                         break;
-                    case ScrollEffect.EffectType.PositionZ:
+                    case ScrollEffect.EffectType.LocalPositionZ:
                         {
                             Vector3 position = item.localPosition;
                             position.z = effect.GetEffectValue(space);
                             item.localPosition = position;
+                        }
+                        break;
+                    case ScrollEffect.EffectType.CustomEffect:
+                        {
+                            OnCustomEffect.Invoke(item, effect.GetEffectValue(space));
                         }
                         break;
                 }
