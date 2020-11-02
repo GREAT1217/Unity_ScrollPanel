@@ -103,8 +103,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     void Start()
     {
         Init();
-        OnInfiniteScrolling();
-        SnapNearestCenterItem();
+        SnapItem(_startingIndex);
     }
 
     void Update()
@@ -171,7 +170,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
             //Content的缩放，要依据缩放计算子物体之间的距离
             _scaledContentSize.x = Content.sizeDelta.x * Content.lossyScale.x;
             _scaledContentSize.y = Content.sizeDelta.y * Content.lossyScale.y;
-            if (_canvasScaler != null && _canvas.renderMode != RenderMode.WorldSpace)
+            if (_canvasScaler != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay)
             {
                 _scaledContentSize.x /= _canvasRT.localScale.x;
                 _scaledContentSize.y /= _canvasRT.localScale.y;
@@ -235,6 +234,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         //根据当前子对象位置更新Content位置
         if (_dragging || _pressing) return;
         if (!_snapping) return;
+		OnInfiniteScrolling();
         Content.anchoredPosition = Vector2.Lerp(Content.anchoredPosition, _targetPos, Time.deltaTime * _snapSpeed);
         if (Vector2.Distance(Content.anchoredPosition, _targetPos) < _snapThreshold)
         {
