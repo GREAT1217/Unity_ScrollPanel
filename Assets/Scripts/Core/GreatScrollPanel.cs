@@ -26,35 +26,43 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         Vertical,
         Free,
     }
+
     public enum ItemSizeType
     {
-        Custom,//自定义
-        Fit//自适应（与Viewport同大小）
+        Custom, //自定义
+        Fit //自适应（与Viewport同大小）
     }
+
     public enum ItemInitType
     {
-        Dynamic,//动态生成
-        Static//静态生成（使用子物体）
+        Dynamic, //动态生成
+        Static //静态生成（使用子物体）
     }
-    public class ItemInitEvent : UnityEvent<Transform, int> { };
-    public class ItemCenterEvent : UnityEvent<int> { };
 
-    public ScrollAxis _scrollAxis = ScrollAxis.Horizontal;//滑动轴向
+    public class ItemInitEvent : UnityEvent<Transform, int>
+    {
+    };
 
-    public ItemInitType _itemInitType = ItemInitType.Static;//子对象初始化类型
-    public GameObject _itemPrefab;//子对象预制体
-    public int _itemsCount;//子对象数量
-    public bool _itemAutoLayout = true;//子对象自动布局
-    public ItemSizeType _itemSizeType = ItemSizeType.Custom;//子对象大小类型
-    public Vector2 _itemSize = new Vector2(120, 170);//子对象大小
-    public float _itemSpacing = 20f;//子对象间隔
-    public bool _infinite = false;//无限滑动
+    public class ItemCenterEvent : UnityEvent<int>
+    {
+    };
 
-    public float _snapSpeed = 10f;//对齐速度
-    public float _snapThreshold = 0.01f;//对齐阈值
+    public ScrollAxis _scrollAxis = ScrollAxis.Horizontal; //滑动轴向
 
-    public bool _inertia = false;//使用惯性
-    public int _startingIndex = 0;//开始子对象索引
+    public ItemInitType _itemInitType = ItemInitType.Static; //子对象初始化类型
+    public GameObject _itemPrefab; //子对象预制体
+    public int _itemsCount; //子对象数量
+    public bool _itemAutoLayout = true; //子对象自动布局
+    public ItemSizeType _itemSizeType = ItemSizeType.Custom; //子对象大小类型
+    public Vector2 _itemSize = new Vector2(120, 170); //子对象大小
+    public float _itemSpacing = 20f; //子对象间隔
+    public bool _infinite = false; //无限滑动
+
+    public float _snapSpeed = 10f; //对齐速度
+    public float _snapThreshold = 0.01f; //对齐阈值
+
+    public bool _inertia = false; //使用惯性
+    public int _startingIndex = 0; //开始子对象索引
 
     private Canvas _canvas;
     private RectTransform _canvasRT;
@@ -70,11 +78,42 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
     private ItemInitEvent _onItemInit;
     private ItemCenterEvent _onItemCenter;
 
-    public RectTransform Content { get { return _scrollRect.content; } }
-    public RectTransform Viewport { get { return _scrollRect.viewport; } }
-    public RectTransform[] ItemsRT { get; set; }
-    public int ItemsCount { get { return _itemsCount; } }
-    public int CenterIndex { get; set; }
+    public RectTransform Content
+    {
+        get
+        {
+            return _scrollRect.content;
+        }
+    }
+
+    public RectTransform Viewport
+    {
+        get
+        {
+            return _scrollRect.viewport;
+        }
+    }
+
+    public RectTransform[] ItemsRT
+    {
+        get;
+        set;
+    }
+
+    public int ItemsCount
+    {
+        get
+        {
+            return _itemsCount;
+        }
+    }
+
+    public int CenterIndex
+    {
+        get;
+        set;
+    }
+
     public ItemInitEvent OnItemInit
     {
         get
@@ -83,6 +122,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
             return _onItemInit;
         }
     }
+
     public ItemCenterEvent OnItemCenter
     {
         get
@@ -219,7 +259,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         {
             ItemsRT[index].sizeDelta = _itemSize;
             //设置位置
-            float itemPosX = (_scrollAxis == ScrollAxis.Horizontal) ? index * (_itemSpacing + _itemSize.x) + (_itemSize.x / 2f) : 0f;//子物体轴心点在中间
+            float itemPosX = (_scrollAxis == ScrollAxis.Horizontal) ? index * (_itemSpacing + _itemSize.x) + (_itemSize.x / 2f) : 0f; //子物体轴心点在中间
             float itemPosY = (_scrollAxis == ScrollAxis.Vertical) ? index * (_itemSpacing + _itemSize.y) + (_itemSize.y / 2f) : 0f;
             ItemsRT[index].anchoredPosition = new Vector2(itemPosX, itemPosY);
         }
@@ -234,7 +274,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         //根据当前子对象位置更新Content位置
         if (_dragging || _pressing) return;
         if (!_snapping) return;
-		OnInfiniteScrolling();
+        OnInfiniteScrolling();
         Content.anchoredPosition = Vector2.Lerp(Content.anchoredPosition, _targetPos, Time.deltaTime * _snapSpeed);
         if (Vector2.Distance(Content.anchoredPosition, _targetPos) < _snapThreshold)
         {
@@ -280,7 +320,7 @@ public class GreatScrollPanel : MonoBehaviour, IBeginDragHandler, IDragHandler, 
         for (int i = 1; i < ItemsCount; i++)
         {
             float tempSpace = Mathf.Abs(SpaceFromCenter(ItemsRT[i].position));
-            if (Mathf.Min(minSpace, tempSpace) == tempSpace)
+            if (tempSpace < minSpace)
             {
                 nearestIndex = i;
                 minSpace = tempSpace;
